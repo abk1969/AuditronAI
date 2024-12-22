@@ -1,0 +1,35 @@
+# Configuration pour la gestion des tokens
+token_management:
+  # Décomposition des tâches d'analyse
+  analysis_tasks:
+    - name: basic_analysis
+      description: "Analyse basique du code (syntaxe, style, métriques simples)"
+      max_tokens: 15000
+      priority: 1
+      
+    - name: security_analysis 
+      description: "Analyse de sécurité (vulnérabilités, failles)"
+      max_tokens: 20000
+      priority: 2
+      
+    - name: quality_analysis
+      description: "Analyse de la qualité du code (patterns, maintenabilité)"
+      max_tokens: 20000
+      priority: 3
+      
+    - name: ai_insights
+      description: "Insights et recommandations d'amélioration"
+      max_tokens: 15000
+      priority: 4
+
+  # Configuration des chunks pour l'analyse de gros fichiers
+  code_chunking:
+    max_chunk_size: 2000  # Nombre de lignes max par chunk
+    overlap: 100          # Lignes de chevauchement entre chunks
+    
+  # Stratégies de réduction de tokens
+  token_reduction:
+    - exclude_comments: true
+    - simplify_formatting: true
+    - focus_relevant_sections: true
+    - skip_generated_code: true

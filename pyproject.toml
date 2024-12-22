@@ -35,6 +35,9 @@ dodgy = "^0.2.1"
 pyyaml = "^6.0.1"
 python-dotenv = "1.0.1"
 psutil = "^5.9.0"
+sqlalchemy = "^1.4.0"
+psycopg2-binary = "^2.9.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 [build-system]
 requires = ["poetry-core"]
@@ -43,6 +46,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 run-app = "AuditronAI.app.streamlit_app:main"
 run-promptwizard = "PromptWizard.app.streamlit_app:main"
+install-postgres = "AuditronAI.scripts.install_postgres:main"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.1.0"

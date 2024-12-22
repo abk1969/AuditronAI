@@ -30,15 +30,19 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock ./
 COPY AuditronAI/ ./AuditronAI/
 COPY PromptWizard/ ./PromptWizard/
+COPY auth/ ./auth/
 
-# Install dependencies
-RUN poetry install --no-dev --no-root
+# Install dependencies and the project
+RUN poetry install --no-dev && \
+    pip install streamlit && \
+    poetry build && \
+    pip install dist/*.whl
 
-# Install the project
-RUN poetry install --no-dev
+# Create required directories
+RUN mkdir -p /app/data /app/logs
 
 # Expose Streamlit port
 EXPOSE 8501
 
 # Command to run the application
-CMD ["poetry", "run", "run-app"]
+CMD ["streamlit", "run", "AuditronAI/app/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8501"]

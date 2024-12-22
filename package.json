@@ -1,0 +1,16 @@
+{
+  "name": "ms_promptwizard",
+  "version": "1.0.0",
+  "description": "Analyseur de code Python avec IA et sécurité renforcée.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

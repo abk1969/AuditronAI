@@ -42,3 +42,6 @@ data/
 # AuditronAI spécifique
 temp_analysis.py
 temp_pylint.py
+
+# Masquer PromptWizard
+PromptWizard/
