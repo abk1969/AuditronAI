@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "auditron-ai"
+version = "0.1.0"
+description = "Analyseur de code Python avec IA"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "AuditronAI"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.9.7 || >3.9.7,<4.0"
+streamlit = "^1.29.0"
+loguru = "^0.7.0"
+python-json-logger = "^2.0.7"
+openai = "^1.58.1"
+google-generativeai = "^0.8.3"
+plotly = "^5.18.0"
+pandas = "^2.0.0"
+seaborn = "^0.13.0"
+streamlit-option-menu = "^0.3.2"
+bandit = "^1.7.5"
+safety = "^2.3.5"
+pylint = "^3.3.2"
+radon = "^6.0.1"
+vulture = "^2.10"
+mypy = "^1.7.0"
+flake8 = "^6.1.0"
+flake8-docstrings = "^1.7.0"
+flake8-bugbear = "^23.3.12"
+flake8-bandit = "^4.1.1"
+prospector = "^1.10.3"
+mccabe = "^0.7.0"
+pycodestyle = "^2.11.1"
+pydocstyle = "^6.3.0"
+dodgy = "^0.2.1"
+pyyaml = "^6.0.1"
+python-dotenv = "1.0.1"
+psutil = "^5.9.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+run-app = "AuditronAI.app.streamlit_app:main"
+run-promptwizard = "PromptWizard.app.streamlit_app:main"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.1.0"
+pytest = "^7.0.0"
+pytest-cov = "^4.1.0"
