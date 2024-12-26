@@ -1,96 +1,129 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Couleurs pour les messages
-set "GREEN=[32m"
-set "YELLOW=[33m"
-set "RED=[31m"
-set "NC=[0m"
+echo [92mInstallation d'AuditronAI...[0m
 
-echo %GREEN%=== Installation automatisée de PromptWizard ===%NC%
+:: Vérifier Python
 echo.
-
-:: Vérification de Docker
-echo %GREEN%[INFO]%NC% Vérification de Docker...
-docker --version > nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    echo %RED%[ERROR]%NC% Docker n'est pas installé. Veuillez l'installer : https://docs.docker.com/get-docker/
+echo [93mVérification de Python...[0m
+python --version >nul 2>&1
+if errorlevel 1 (
+    echo [91mPython n'est pas installé. Veuillez l'installer d'abord.[0m
     exit /b 1
 )
+echo [92mPython trouvé.[0m
 
-:: Vérification de Docker Compose
-echo %GREEN%[INFO]%NC% Vérification de Docker Compose...
-docker compose version > nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    echo %RED%[ERROR]%NC% Docker Compose n'est pas installé. Veuillez l'installer : https://docs.docker.com/compose/install/
-    exit /b 1
+:: Vérifier pip
+echo.
+echo [93mVérification de pip...[0m
+pip --version >nul 2>&1
+if errorlevel 1 (
+    echo [91mpip n'est pas installé. Installation...[0m
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    python get-pip.py
+    del get-pip.py
 )
+echo [92mpip trouvé.[0m
 
-:: Vérification des ports
-echo %GREEN%[INFO]%NC% Vérification des ports requis...
-netstat -ano | findstr ":8501" > nul
-if %ERRORLEVEL% equ 0 (
-    echo %RED%[ERROR]%NC% Le port 8501 est déjà utilisé. Veuillez libérer ce port avant de continuer.
-    exit /b 1
-)
-netstat -ano | findstr ":5432" > nul
-if %ERRORLEVEL% equ 0 (
-    echo %RED%[ERROR]%NC% Le port 5432 est déjà utilisé. Veuillez libérer ce port avant de continuer.
-    exit /b 1
-)
-echo %GREEN%[INFO]%NC% Les ports requis sont disponibles
+:: Créer un environnement virtuel
+echo.
+echo [93mCréation de l'environnement virtuel...[0m
+python -m venv venv
+call venv\Scripts\activate.bat
 
-:: Configuration de l'environnement
-echo %GREEN%[INFO]%NC% Configuration de l'environnement...
-if not exist .env (
-    if exist .env.example (
-        copy .env.example .env > nul
-        echo %GREEN%[INFO]%NC% Fichier .env créé à partir de .env.example
+:: Mettre à jour pip
+echo.
+echo [93mMise à jour de pip...[0m
+python -m pip install --upgrade pip
+
+:: Installer les dépendances Python
+echo.
+echo [93mInstallation des dépendances Python...[0m
+pip install -r requirements.txt
+
+:: Vérifier Node.js et npm
+echo.
+echo [93mVérification de Node.js et npm...[0m
+node --version >nul 2>&1
+if errorlevel 1 (
+    echo [91mNode.js n'est pas installé. Installation...[0m
+    echo [93mTéléchargement de Node.js...[0m
+    
+    :: Détecter l'architecture
+    if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
+        set "NODE_URL=https://nodejs.org/dist/v16.15.0/node-v16.15.0-x64.msi"
     ) else (
-        echo %RED%[ERROR]%NC% Fichier .env.example non trouvé
-        exit /b 1
+        set "NODE_URL=https://nodejs.org/dist/v16.15.0/node-v16.15.0-x86.msi"
     )
-) else (
-    echo %YELLOW%[WARN]%NC% Le fichier .env existe déjà
+    
+    :: Télécharger et installer Node.js
+    curl -o node_installer.msi !NODE_URL!
+    msiexec /i node_installer.msi /qn
+    del node_installer.msi
+    
+    :: Rafraîchir les variables d'environnement
+    refreshenv
+)
+echo [92mNode.js trouvé.[0m
+
+:: Installer les outils TypeScript
+echo.
+echo [93mInstallation des outils TypeScript...[0m
+call npm install -g typescript eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-security
+
+:: Installer les outils d'analyse Python
+echo.
+echo [93mInstallation des outils d'analyse Python...[0m
+pip install bandit prospector radon vulture
+
+:: Créer les répertoires nécessaires
+echo.
+echo [93mCréation des répertoires...[0m
+if not exist "reports" mkdir reports
+if not exist ".cache" mkdir .cache
+if not exist "plugins" mkdir plugins
+if not exist "logs" mkdir logs
+
+:: Vérifier PostgreSQL si nécessaire
+echo.
+echo [93mVérification de PostgreSQL...[0m
+psql --version >nul 2>&1
+if errorlevel 1 (
+    echo [93mPostgreSQL n'est pas installé. Voulez-vous l'installer? (O/N)[0m
+    set /p install_postgres=
+    if /i "!install_postgres!"=="O" (
+        echo [93mVeuillez télécharger et installer PostgreSQL depuis:[0m
+        echo https://www.postgresql.org/download/windows/
+        echo.
+        echo [93mAppuyez sur une touche une fois l'installation terminée...[0m
+        pause >nul
+    )
 )
 
-:: Démarrage des services
-echo %GREEN%[INFO]%NC% Démarrage des services...
-docker compose down > nul 2>&1
-docker compose pull
-docker compose up -d --build
+:: Configuration post-installation
+echo.
+echo [93mConfiguration post-installation...[0m
 
-:: Attente du démarrage des services
-echo %GREEN%[INFO]%NC% Attente du démarrage des services...
-set /a attempt=1
-set /a max_attempts=30
-
-:wait_loop
-curl -s http://localhost:8501 > nul 2>&1
-if %ERRORLEVEL% equ 0 (
+:: Créer le fichier .env s'il n'existe pas
+if not exist .env (
     echo.
-    echo %GREEN%[INFO]%NC% Application démarrée avec succès!
-    echo.
-    echo %GREEN%Installation terminée avec succès!%NC%
-    echo Accédez à l'application : %GREEN%http://localhost:8501%NC%
-    echo.
-    echo Commandes utiles :
-    echo - Voir les logs : %YELLOW%docker compose logs -f%NC%
-    echo - Arrêter l'application : %YELLOW%docker compose down%NC%
-    echo - Redémarrer l'application : %YELLOW%docker compose restart%NC%
-    goto :end
+    echo [93mCréation du fichier .env...[0m
+    copy .env.example .env >nul
+    echo [92mFichier .env créé. Veuillez le configurer avec vos paramètres.[0m
 )
 
-if %attempt% geq %max_attempts% (
-    echo.
-    echo %RED%[ERROR]%NC% L'application n'a pas démarré dans le temps imparti
-    exit /b 1
-)
+:: Installation terminée
+echo.
+echo [92mInstallation terminée avec succès![0m
+echo.
+echo [93mPour commencer:[0m
+echo 1. Configurez le fichier .env avec vos paramètres
+echo 2. Activez l'environnement virtuel: venv\Scripts\activate.bat
+echo 3. Lancez l'exemple: python examples/analyze_project.py
+echo.
+echo [92mBonne analyse![0m
 
-set /a attempt+=1
-echo|set /p=".."
-timeout /t 2 /nobreak > nul
-goto :wait_loop
+:: Pause pour voir les messages
+pause
 
-:end
 endlocal

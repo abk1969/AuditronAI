@@ -19,29 +19,133 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# Environment
+MANIFEST
 .env
-.venv
-env/
 venv/
+.venv/
 ENV/
 
-# Logs et données
-logs/
-*.log
-data/
-*.db
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+.npm
+.yarn-integrity
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
 
-# AuditronAI spécifique
-temp_analysis.py
-temp_pylint.py
+# Logs et caches
+*.log
+.cache/
+logs/
+*.sqlite
+*.db
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.dmypy.json
+dmypy.json
 
-# Masquer PromptWizard
-PromptWizard/
+# Fichiers générés
+reports/
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Fichiers de configuration locaux
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers de build
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dll
+*.dylib
+*.class
+*.exe
+*.o
+*.a
+
+# Fichiers de dépendances
+poetry.lock
+package-lock.json
+yarn.lock
+
+# Fichiers de test
+.coverage
+coverage/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Documentation générée
+docs/_build/
+site/
+
+# Fichiers spécifiques au projet
+.auditronai/
+*.analysis.json
+*.report.json
+.history/
+
+# Fichiers temporaires
+temp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Fichiers de base de données
+*.sqlite3
+*.db
+*.sql
+
+# Fichiers de configuration d'éditeur
+.editorconfig
+.prettierrc
+.eslintrc
+.pylintrc
+
+# Fichiers de déploiement
+*.env
+*.env.*
+!.env.example
+.vercel
+.netlify
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk

@@ -34,10 +34,10 @@ auth_manager = db_manager.get_auth_manager()
 
 # Register a new user
 success, message, user = auth_manager.register_user(
+    username="johndoe",
     email="user@example.com",
     password="secure_password",
-    first_name="John",
-    last_name="Doe"
+    is_admin=False
 )
 
 # Authenticate user

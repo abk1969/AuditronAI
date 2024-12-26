@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional, Tuple
+from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
@@ -19,10 +20,11 @@ class AuthManager:
 
     def register_user(
         self, 
-        email: str, 
-        password: str, 
-        first_name: Optional[str] = None, 
-        last_name: Optional[str] = None
+        email: str,
+        password: str,
+        first_name: str,
+        last_name: str,
+        is_admin: bool = False
     ) -> Tuple[bool, str, Optional[User]]:
         try:
             hashed_password = self.get_password_hash(password)
@@ -30,7 +32,8 @@ class AuthManager:
                 email=email,
                 password_hash=hashed_password,
                 first_name=first_name,
-                last_name=last_name
+                last_name=last_name,
+                is_admin=is_admin
             )
             self.db.add(user)
             self.db.commit()
@@ -53,15 +56,14 @@ class AuthManager:
             if not self.verify_password(password, user.password_hash):
                 return False, "Incorrect password", None
             
-            # Update last login
-            user.last_login = datetime.utcnow()
+            # This will trigger the updated_at column update
             self.db.commit()
             
             return True, "Authentication successful", user
         except Exception as e:
             return False, f"Authentication failed: {str(e)}", None
 
-    def update_password(self, user_id: int, current_password: str, new_password: str) -> Tuple[bool, str]:
+    def update_password(self, user_id: UUID, current_password: str, new_password: str) -> Tuple[bool, str]:
         try:
             user = self.db.query(User).filter(User.id == user_id).first()
             if not user:
@@ -77,7 +79,7 @@ class AuthManager:
             self.db.rollback()
             return False, f"Password update failed: {str(e)}"
 
-    def deactivate_user(self, user_id: int) -> Tuple[bool, str]:
+    def deactivate_user(self, user_id: UUID) -> Tuple[bool, str]:
         try:
             user = self.db.query(User).filter(User.id == user_id).first()
             if not user:

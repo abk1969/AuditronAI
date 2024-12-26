@@ -1,8 +1,6 @@
-# Licences
+MIT License
 
-## AuditronAI
 Copyright (c) 2024 AuditronAI
-Distribué sous licence MIT
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -14,30 +12,12 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-## Composants tiers
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-Ce projet utilise les composants open source suivants :
-
-### Interface utilisateur
-- Streamlit (Apache License 2.0)
-- Plotly (MIT License)
-- Rich (MIT License)
-
-### Analyse de sécurité
-- Bandit (Apache License 2.0)
-- Safety (MIT License)
-- Semgrep (LGPL-2.1 License)
-- Pylint (GPL-2.0 License)
-
-### Utilitaires
-- Python-dotenv (BSD License)
-- Loguru (MIT License)
-- PyYAML (MIT License)
-- Watchdog (Apache License 2.0)
-
-### IA
-- OpenAI API (Proprietary)
-- Google Gemini API (Proprietary)
-
-## Contributions
-Les contributions à ce projet doivent respecter les licences des composants utilisés. 
+Note: This license applies to the AuditronAI software itself. The tools and libraries used by AuditronAI (such as Bandit, Prospector, Radon, etc.) are subject to their own respective licenses.

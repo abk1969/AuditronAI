@@ -1,0 +1,13 @@
+{
+  "total_analyses": 22,
+  "analyses_by_service": {
+    "google": 4,
+    "openai": 18
+  },
+  "analyses_by_date": {
+    "2024-12-21": 1,
+    "2024-12-22": 3,
+    "2024-12-24": 18
+  },
+  "errors": 0
+}

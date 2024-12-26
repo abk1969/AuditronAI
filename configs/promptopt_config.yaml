@@ -1,0 +1,30 @@
+# Configuration des modèles d'IA
+models:
+  openai:
+    enabled: true
+    model: "gpt-4"
+    api_key: "${OPENAI_API_KEY}"
+    
+  google:
+    enabled: true
+    model: "gemini-pro"
+    api_key: "${GOOGLE_API_KEY}"
+    
+  anthropic:
+    enabled: true
+    model: "claude-3-sonnet-20241022"
+    api_key: "${ANTHROPIC_API_KEY}"
+    max_tokens: 80000
+    context_window: 200000
+
+# Configuration des paramètres généraux
+parameters:
+  temperature: 0.7
+  max_retries: 3
+  timeout: 60
+  
+# Configuration de la gestion des tokens
+token_management:
+  chunk_size: 4000
+  overlap: 200
+  cache_enabled: true

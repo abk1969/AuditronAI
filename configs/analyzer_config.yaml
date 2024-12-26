@@ -1,0 +1,195 @@
+# Configuration par défaut des analyseurs
+
+# Configuration générale
+general:
+  max_line_length: 100
+  strict: true
+  debug: false
+  timeout: 30  # secondes
+  parallel: true
+  max_workers: 4
+
+# Configuration des analyseurs spécifiques
+analyzers:
+  script:
+    enabled: true
+    ignore_patterns:
+      - "*.pyc"
+      - "__pycache__"
+      - "*.egg-info"
+      - "build"
+      - "dist"
+    max_file_size: 1048576  # 1MB
+
+  vulture:
+    enabled: true
+    min_confidence: 60
+    ignore_names:
+      - "__str__"
+      - "__repr__"
+      - "main"
+    ignore_decorators:
+      - "@property"
+      - "@abstractmethod"
+
+  prospector:
+    enabled: true
+    strictness: medium
+    doc_warnings: true
+    test_warnings: true
+    ignore_patterns:
+      - "test_*.py"
+      - "setup.py"
+    max_line_length: 100
+    output_format: json
+
+  typescript:
+    enabled: true
+    strict: true
+    project: "tsconfig.json"
+    eslint_config: ".eslintrc.json"
+    rules:
+      "@typescript-eslint/no-explicit-any": "error"
+      "@typescript-eslint/explicit-function-return-type": "warn"
+      "security/detect-object-injection": "error"
+    ignore_patterns:
+      - "node_modules"
+      - "dist"
+      - "*.test.ts"
+
+  sql:
+    enabled: true
+    dialect: "postgresql"
+    max_query_length: 1000
+    check_patterns:
+      - injection
+      - performance
+      - best_practices
+    ignore_patterns:
+      - "-- NOCHECK"
+    rules:
+      require_where: true
+      prevent_delete_all: true
+      check_indexes: true
+
+  radon:
+    enabled: true
+    complexity:
+      max_score: 10
+      rank_a: 5
+      rank_b: 10
+      rank_c: 20
+      rank_d: 30
+      rank_e: 40
+      rank_f: 50
+    maintainability:
+      min_index: 20
+      rank_a: 20
+      rank_b: 10
+      rank_c: 0
+    raw_metrics:
+      max_loc: 1000
+      max_lloc: 500
+      max_sloc: 750
+
+  bandit:
+    enabled: true
+    aggregate_by: filename
+    confidence_level: HIGH
+    severity_level: MEDIUM
+    tests:
+      - B101  # assert used
+      - B102  # exec used
+      - B103  # set bad file permissions
+      - B104  # hardcoded bind all
+      - B105  # hardcoded password string
+      - B106  # hardcoded password funcarg
+      - B107  # hardcoded password default
+      - B108  # hardcoded tmp directory
+      - B110  # try_except_pass
+      - B112  # try_except_continue
+      - B201  # flask debug true
+      - B301  # pickle
+      - B302  # marshal
+      - B303  # md5
+      - B304  # ciphers
+      - B305  # cipher_modes
+      - B306  # mktemp_q
+      - B307  # eval
+      - B308  # mark_safe
+      - B309  # httpsconnection
+      - B310  # urllib_urlopen
+      - B311  # random
+      - B312  # telnetlib
+      - B313  # xml_bad_cElementTree
+      - B314  # xml_bad_ElementTree
+      - B315  # xml_bad_expatreader
+      - B316  # xml_bad_expatbuilder
+      - B317  # xml_bad_sax
+      - B318  # xml_bad_minidom
+      - B319  # xml_bad_pulldom
+      - B320  # xml_bad_etree
+      - B321  # ftplib
+      - B322  # input
+      - B323  # unverified_context
+      - B324  # hashlib_new_insecure_functions
+      - B325  # tempnam
+    skips:
+      - B101  # skip assert warnings
+      - B322  # skip input warnings
+
+# Configuration des rapports
+reporting:
+  output_format: json
+  save_to_file: true
+  output_dir: "reports"
+  include_source: true
+  group_by:
+    - severity
+    - type
+    - file
+  metrics:
+    - complexity
+    - maintainability
+    - security
+    - quality
+  summary:
+    include_metrics: true
+    include_suggestions: true
+    max_issues: 1000
+
+# Configuration des suggestions
+suggestions:
+  enabled: true
+  max_suggestions: 5
+  include_code_samples: true
+  languages:
+    - python
+    - typescript
+    - sql
+  categories:
+    - security
+    - performance
+    - maintainability
+    - best_practices
+
+# Configuration du cache
+caching:
+  enabled: true
+  directory: ".cache"
+  max_size: 104857600  # 100MB
+  ttl: 3600  # 1 heure
+  invalidate_on:
+    - file_change
+    - config_change
+    - version_change
+
+# Configuration des plugins
+plugins:
+  enabled: true
+  directory: "plugins"
+  auto_discover: true
+  blacklist: []
+  settings:
+    max_memory: 512  # MB
+    timeout: 30  # secondes

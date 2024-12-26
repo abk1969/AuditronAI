@@ -1,23 +1,189 @@
-__pycache__
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.env
+venv/
+.venv/
+ENV/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+.npm
+.yarn-integrity
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Logs et caches
+*.log
+.cache/
+logs/
+*.sqlite
+*.db
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.dmypy.json
+dmypy.json
+
+# Fichiers générés
+reports/
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Fichiers de configuration locaux
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers de build
 *.pyc
 *.pyo
 *.pyd
-.Python
-.env
-.env.example
-*.log
-.git
-.gitignore
-.pytest_cache
+*.so
+*.dll
+*.dylib
+*.class
+*.exe
+*.o
+*.a
+
+# Fichiers de dépendances
+poetry.lock
+package-lock.json
+yarn.lock
+
+# Fichiers de test
 .coverage
-htmlcov/
-dist/
-build/
-*.egg-info/
-.idea/
-.vscode/
+coverage/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Documentation générée
+docs/_build/
+site/
+
+# Fichiers spécifiques au projet
+.auditronai/
+*.analysis.json
+*.report.json
+.history/
+
+# Fichiers temporaires
+temp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Fichiers de base de données
+*.sqlite3
+*.db
+*.sql
+
+# Fichiers de configuration d'éditeur
+.editorconfig
+.prettierrc
+.eslintrc
+.pylintrc
+
+# Fichiers de déploiement
+*.env
+*.env.*
+!.env.example
+.vercel
+.netlify
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Tests
 tests/
-logs/
-data/
-datasets/
-examples/
+test/
+testing/
+__tests__/
+*.test.*
+*.spec.*
+
+# Documentation
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!LICENSE.md
+
+# Autres
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.iso
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx

@@ -6,110 +6,110 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Fonction pour afficher les messages
-log() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
+echo -e "${GREEN}Installation d'AuditronAI...${NC}"
 
-warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+# Vérifier Python
+echo -e "\n${YELLOW}Vérification de Python...${NC}"
+if ! command -v python3 &> /dev/null; then
+    echo -e "${RED}Python 3 n'est pas installé. Veuillez l'installer d'abord.${NC}"
     exit 1
-}
+fi
+echo -e "${GREEN}Python 3 trouvé.${NC}"
 
-# Vérification de Docker
-check_docker() {
-    log "Vérification de Docker..."
-    if ! command -v docker &> /dev/null; then
-        error "Docker n'est pas installé. Veuillez l'installer : https://docs.docker.com/get-docker/"
-    fi
-    if ! docker info &> /dev/null; then
-        error "Le service Docker n'est pas démarré ou vous n'avez pas les permissions nécessaires"
-    fi
-    log "Docker est correctement installé et configuré"
-}
+# Vérifier pip
+echo -e "\n${YELLOW}Vérification de pip...${NC}"
+if ! command -v pip3 &> /dev/null; then
+    echo -e "${RED}pip n'est pas installé. Installation...${NC}"
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    python3 get-pip.py
+    rm get-pip.py
+fi
+echo -e "${GREEN}pip trouvé.${NC}"
 
-# Vérification de Docker Compose
-check_docker_compose() {
-    log "Vérification de Docker Compose..."
-    if ! command -v docker compose &> /dev/null; then
-        error "Docker Compose n'est pas installé. Veuillez l'installer : https://docs.docker.com/compose/install/"
-    fi
-    log "Docker Compose est correctement installé"
-}
+# Créer un environnement virtuel
+echo -e "\n${YELLOW}Création de l'environnement virtuel...${NC}"
+python3 -m venv venv
+source venv/bin/activate
 
-# Vérification des ports
-check_ports() {
-    log "Vérification des ports requis..."
-    if lsof -Pi :8501 -sTCP:LISTEN -t &> /dev/null; then
-        error "Le port 8501 est déjà utilisé. Veuillez libérer ce port avant de continuer."
-    fi
-    if lsof -Pi :5432 -sTCP:LISTEN -t &> /dev/null; then
-        error "Le port 5432 est déjà utilisé. Veuillez libérer ce port avant de continuer."
-    fi
-    log "Les ports requis sont disponibles"
-}
+# Mettre à jour pip
+echo -e "\n${YELLOW}Mise à jour de pip...${NC}"
+pip install --upgrade pip
 
-# Configuration de l'environnement
-setup_environment() {
-    log "Configuration de l'environnement..."
-    if [ ! -f .env ]; then
-        if [ -f .env.example ]; then
-            cp .env.example .env
-            log "Fichier .env créé à partir de .env.example"
+# Installer les dépendances Python
+echo -e "\n${YELLOW}Installation des dépendances Python...${NC}"
+pip install -r requirements.txt
+
+# Vérifier Node.js et npm
+echo -e "\n${YELLOW}Vérification de Node.js et npm...${NC}"
+if ! command -v node &> /dev/null; then
+    echo -e "${RED}Node.js n'est pas installé. Installation via nvm...${NC}"
+    
+    # Installer nvm
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+    
+    # Charger nvm
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    
+    # Installer Node.js LTS
+    nvm install --lts
+    nvm use --lts
+fi
+echo -e "${GREEN}Node.js trouvé.${NC}"
+
+# Installer les outils TypeScript
+echo -e "\n${YELLOW}Installation des outils TypeScript...${NC}"
+npm install -g typescript eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-security
+
+# Installer les outils d'analyse Python
+echo -e "\n${YELLOW}Installation des outils d'analyse Python...${NC}"
+pip install bandit prospector radon vulture
+
+# Créer les répertoires nécessaires
+echo -e "\n${YELLOW}Création des répertoires...${NC}"
+mkdir -p reports
+mkdir -p .cache
+mkdir -p plugins
+mkdir -p logs
+
+# Vérifier PostgreSQL si nécessaire
+echo -e "\n${YELLOW}Vérification de PostgreSQL...${NC}"
+if ! command -v psql &> /dev/null; then
+    echo -e "${YELLOW}PostgreSQL n'est pas installé. Voulez-vous l'installer? (y/n)${NC}"
+    read -r install_postgres
+    if [[ $install_postgres =~ ^[Yy]$ ]]; then
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql postgresql-contrib
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            brew install postgresql
         else
-            error "Fichier .env.example non trouvé"
+            echo -e "${YELLOW}Veuillez installer PostgreSQL manuellement pour votre système.${NC}"
         fi
-    else
-        warn "Le fichier .env existe déjà"
     fi
-}
+fi
 
-# Démarrage des services
-start_services() {
-    log "Démarrage des services..."
-    docker compose down &> /dev/null || true
-    docker compose pull
-    docker compose up -d --build
+# Configuration post-installation
+echo -e "\n${YELLOW}Configuration post-installation...${NC}"
 
-    # Attente du démarrage des services
-    log "Attente du démarrage des services..."
-    attempt=1
-    max_attempts=30
-    while [ $attempt -le $max_attempts ]; do
-        if curl -s http://localhost:8501 &> /dev/null; then
-            log "Application démarrée avec succès!"
-            echo -e "\n${GREEN}Installation terminée avec succès!${NC}"
-            echo -e "Accédez à l'application : ${GREEN}http://localhost:8501${NC}"
-            echo -e "\nCommandes utiles :"
-            echo -e "- Voir les logs : ${YELLOW}docker compose logs -f${NC}"
-            echo -e "- Arrêter l'application : ${YELLOW}docker compose down${NC}"
-            echo -e "- Redémarrer l'application : ${YELLOW}docker compose restart${NC}"
-            return 0
-        fi
-        echo -n "."
-        sleep 2
-        attempt=$((attempt + 1))
-    done
-    error "L'application n'a pas démarré dans le temps imparti"
-}
+# Créer le fichier .env s'il n'existe pas
+if [ ! -f .env ]; then
+    echo -e "\n${YELLOW}Création du fichier .env...${NC}"
+    cp .env.example .env
+    echo -e "${GREEN}Fichier .env créé. Veuillez le configurer avec vos paramètres.${NC}"
+fi
 
-# Fonction principale
-main() {
-    echo -e "${GREEN}=== Installation automatisée de PromptWizard ===${NC}\n"
-    
-    # Vérifications
-    check_docker
-    check_docker_compose
-    check_ports
-    setup_environment
-    
-    # Démarrage
-    start_services
-}
+# Vérifier les permissions des répertoires
+echo -e "\n${YELLOW}Vérification des permissions...${NC}"
+chmod -R 755 .
+chmod -R 777 logs
+chmod -R 777 .cache
+chmod -R 777 reports
 
-# Exécution du script
-main
+# Installation terminée
+echo -e "\n${GREEN}Installation terminée avec succès!${NC}"
+echo -e "\n${YELLOW}Pour commencer:${NC}"
+echo -e "1. Configurez le fichier .env avec vos paramètres"
+echo -e "2. Activez l'environnement virtuel: source venv/bin/activate"
+echo -e "3. Lancez l'exemple: python examples/analyze_project.py"
+echo -e "\n${GREEN}Bonne analyse!${NC}"

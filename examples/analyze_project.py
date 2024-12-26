@@ -1,110 +1,186 @@
+"""Example d'utilisation des analyseurs de code."""
+import asyncio
+import json
 from pathlib import Path
-import os
-from typing import List, Dict
-from rich.console import Console
-from rich.progress import Progress
-from AuditronAI.core.custom_dataset import CustomDataset
-from dotenv import load_dotenv
-import fnmatch
+from typing import Dict, Any, List
 
-console = Console()
+from AuditronAI.core.analyzers.interfaces import AnalyzerType
+from AuditronAI.core.analyzers.factory import AnalyzerFactory
+from AuditronAI.core.logger import logger
+from AuditronAI.core.error_handling import SecurityError
 
-def should_exclude(file_path: str, exclude_patterns: List[str]) -> bool:
-    """Vérifie si un fichier doit être exclu selon les patterns."""
-    for pattern in exclude_patterns:
-        if fnmatch.fnmatch(file_path, pattern) or any(p in file_path for p in pattern.split(',')):
-            return True
-    return False
-
-def get_python_files(root_dir: str, exclude_patterns: str) -> List[Path]:
-    """Récupère tous les fichiers Python du projet en excluant certains patterns."""
-    python_files = []
-    exclude_list = [p.strip() for p in exclude_patterns.split(',')]
+async def analyze_code(code: str, filename: str, language: str) -> Dict[str, Any]:
+    """
+    Analyse un fichier de code avec tous les analyseurs appropriés.
     
-    # Convertir le chemin en Path absolu
-    root_path = Path(root_dir).resolve()
-    console.print(f"[cyan]Recherche des fichiers Python dans {root_path}[/cyan]")
-    
-    for path in root_path.rglob('*.py'):
-        str_path = str(path)
+    Args:
+        code: Code source à analyser
+        filename: Nom du fichier
+        language: Langage du code
         
-        # Debug: afficher le chemin trouvé
-        console.print(f"[dim]Fichier trouvé: {str_path}[/dim]")
-        
-        # Vérifier si le fichier doit être exclu
-        if should_exclude(str_path, exclude_list):
-            console.print(f"[yellow]Exclu: {str_path}[/yellow]")
-            continue
-            
-        # Vérifier la taille du fichier
-        if path.stat().st_size > int(os.getenv('MAX_FILE_SIZE', 500000)):
-            console.print(f"[yellow]Fichier trop grand: {str_path}[/yellow]")
-            continue
-            
-        python_files.append(path)
-        console.print(f"[green]Ajouté pour analyse: {str_path}[/green]")
-    
-    return python_files
-
-def analyze_file(path: Path) -> Dict:
-    """Analyse un fichier Python."""
-    with open(path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    dataset = CustomDataset(f"analysis_{path.stem}")
-    
-    analysis = dataset.generate_completion("project_analysis", {
-        "file_path": str(path),
-        "code": content
-    })
-    
-    return {
-        "file": str(path),
-        "analysis": analysis
+    Returns:
+        Dict contenant les résultats d'analyse
+    """
+    # Contexte d'analyse
+    context = {
+        'code': code,
+        'filename': filename,
+        'language': language,
+        'config': {
+            'max_line_length': 100,
+            'strict': True,
+            'debug': False
+        }
     }
-
-def main():
-    # Forcer le rechargement des variables d'environnement
-    load_dotenv(override=True)
     
-    console.print("[bold blue]Analyse du projet en cours...[/bold blue]")
+    # Sélectionner les analyseurs appropriés selon le langage
+    analyzer_types = get_analyzers_for_language(language)
     
-    # Récupérer les fichiers Python avec les valeurs par défaut si non définies
-    root_dir = os.getenv('PROJECT_ROOT', '.')
-    exclude_patterns = os.getenv('EXCLUDE_PATTERNS', 'venv,__pycache__')
-    max_file_size = os.getenv('MAX_FILE_SIZE', '500000')
-    
-    # Afficher la configuration actuelle
-    console.print(f"[cyan]Configuration:[/cyan]")
-    console.print(f"Dossier racine: {root_dir}")
-    console.print(f"Patterns exclus: {exclude_patterns}")
-    console.print(f"Taille max fichier: {max_file_size} bytes")
-    
-    files = get_python_files(root_dir, exclude_patterns)
-    
-    if not files:
-        console.print("[red]Aucun fichier Python trouvé dans le projet![/red]")
-        return
-    
-    console.print(f"[green]Nombre de fichiers à analyser: {len(files)}[/green]")
-    
-    # Analyser chaque fichier
-    results = []
-    with Progress() as progress:
-        task = progress.add_task("[cyan]Analyse des fichiers...", total=len(files))
+    try:
+        # Créer les analyseurs
+        analyzers = await AnalyzerFactory.create_analyzers(analyzer_types, context)
         
-        for file in files:
-            console.print(f"\n[bold green]Analyse de {file}...[/bold green]")
-            result = analyze_file(file)
-            results.append(result)
-            progress.update(task, advance=1)
-    
-    # Afficher le résumé
-    console.print("\n[bold blue]Résumé de l'analyse:[/bold blue]")
-    for result in results:
-        console.print(f"\n[bold yellow]{result['file']}[/bold yellow]")
-        console.print(result['analysis'])
-        console.print("-" * 80)
+        # Exécuter les analyses
+        results = {}
+        for analyzer in analyzers:
+            analyzer_results = await analyzer.analyze()
+            results[analyzer.analyzer_type.name] = analyzer_results
+            
+        return results
+        
+    except SecurityError as e:
+        logger.error(f"Erreur lors de l'analyse: {str(e)}")
+        return {
+            'error': True,
+            'message': str(e)
+        }
 
-if __name__ == "__main__":
-    main() 
+def get_analyzers_for_language(language: str) -> List[AnalyzerType]:
+    """
+    Détermine les analyseurs à utiliser selon le langage.
+    
+    Args:
+        language: Langage du code
+        
+    Returns:
+        Liste des types d'analyseurs à utiliser
+    """
+    # Analyseurs communs à tous les langages
+    analyzers = [
+        AnalyzerType.SCRIPT,
+        AnalyzerType.UNUSED,
+        AnalyzerType.QUALITY,
+        AnalyzerType.COMPLEXITY
+    ]
+    
+    # Analyseurs spécifiques au langage
+    if language.lower() == 'python':
+        analyzers.append(AnalyzerType.SECURITY)
+    elif language.lower() == 'typescript':
+        analyzers.append(AnalyzerType.TYPESCRIPT)
+    elif language.lower() == 'sql':
+        analyzers.append(AnalyzerType.SQL)
+        
+    return analyzers
+
+def format_results(results: Dict[str, Any], output_file: str = None) -> None:
+    """
+    Formate et affiche les résultats d'analyse.
+    
+    Args:
+        results: Résultats d'analyse
+        output_file: Fichier de sortie optionnel
+    """
+    # Formater les résultats
+    formatted = {
+        'summary': {
+            'total_issues': 0,
+            'by_severity': {},
+            'by_type': {}
+        },
+        'details': results
+    }
+    
+    # Calculer les statistiques
+    for analyzer_type, analyzer_results in results.items():
+        if isinstance(analyzer_results, dict):
+            # Compter les problèmes
+            issues = analyzer_results.get('security_issues', [])
+            issues.extend(analyzer_results.get('issues', []))
+            
+            formatted['summary']['total_issues'] += len(issues)
+            
+            # Grouper par sévérité
+            for issue in issues:
+                severity = issue.get('severity', 'unknown')
+                formatted['summary']['by_severity'][severity] = \
+                    formatted['summary']['by_severity'].get(severity, 0) + 1
+                    
+            # Grouper par type
+            formatted['summary']['by_type'][analyzer_type] = len(issues)
+    
+    # Afficher ou sauvegarder les résultats
+    if output_file:
+        with open(output_file, 'w') as f:
+            json.dump(formatted, f, indent=2)
+    else:
+        print(json.dumps(formatted, indent=2))
+
+async def main():
+    """Point d'entrée principal."""
+    # Exemple Python
+    python_code = '''
+def insecure_function(user_input):
+    """Fonction avec des problèmes de sécurité."""
+    # Exécution non sécurisée
+    exec(user_input)
+    
+    # Mot de passe en dur
+    password = "secret123"
+    
+    # SQL injection possible
+    query = f"SELECT * FROM users WHERE id = {user_input}"
+    
+    return query
+'''
+
+    # Exemple TypeScript
+    typescript_code = '''
+function processData(data: any): void {
+    // Évaluation non sécurisée
+    eval(data);
+    
+    // Type any utilisé
+    let result: any = {};
+    
+    // Injection possible
+    document.innerHTML = data;
+}
+'''
+
+    # Exemple SQL
+    sql_code = '''
+-- Requête non sécurisée
+SELECT * FROM users 
+WHERE username LIKE '%' + @input + '%'
+ORDER BY id;
+
+-- Suppression sans WHERE
+DELETE FROM logs;
+'''
+
+    # Analyser chaque exemple
+    print("Analyse du code Python...")
+    python_results = await analyze_code(python_code, 'example.py', 'python')
+    format_results(python_results, 'python_analysis.json')
+    
+    print("\nAnalyse du code TypeScript...")
+    ts_results = await analyze_code(typescript_code, 'example.ts', 'typescript')
+    format_results(ts_results, 'typescript_analysis.json')
+    
+    print("\nAnalyse du code SQL...")
+    sql_results = await analyze_code(sql_code, 'example.sql', 'sql')
+    format_results(sql_results, 'sql_analysis.json')
+
+if __name__ == '__main__':
+    asyncio.run(main())
