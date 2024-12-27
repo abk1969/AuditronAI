@@ -1,3 +1,0 @@
-"""
-Glue module for AuditronAI
-"""
