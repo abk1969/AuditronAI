@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Installation des dépendances système
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Installation de Poetry
+ENV POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_VERSION=1.7.0
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="$POETRY_HOME/bin:$PATH"
+
+# Copie des fichiers de configuration Poetry
+COPY pyproject.toml poetry.lock ./
+
+# Installation des dépendances
+RUN poetry install --no-interaction --no-ansi --no-root
+
+# Copie du code source
+COPY . .
+
+# Installation du projet
+RUN poetry install --no-interaction --no-ansi
+
+# Commande par défaut pour démarrer le worker
+CMD ["poetry", "run", "celery", "-A", "app.workers.analysis_worker", "worker", "--loglevel=info"] 

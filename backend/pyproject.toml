@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "auditronai"
+version = "0.1.0"
+description = "Service d'analyse de code pour la sécurité, la qualité et la performance"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0"
+pydantic = "^2.5.2"
+sqlalchemy = "^2.0.23"
+psycopg2-binary = "^2.9.9"
+redis = "^5.0.1"
+celery = "^5.4.0"
+elasticsearch = "^8.11.0"
+pdfkit = "^1.0.0"
+bandit = "^1.7.5"
+radon = "^6.0.1"
+pylint = "^3.0.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.23.2"
+httpx = "^0.25.2"
+black = "^23.11.0"
+isort = "^5.12.0"
+mypy = "^1.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api" 
